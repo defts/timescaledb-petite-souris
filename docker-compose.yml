@@ -1,0 +1,25 @@
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb-petite-souris
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./scripts:/scripts
+    # Pour améliorer les performances lors des démos
+    command: postgres -c shared_preload_libraries=timescaledb -c max_connections=200 -c shared_buffers=512MB -c effective_cache_size=2GB -c maintenance_work_mem=256MB -c checkpoint_completion_target=0.9 -c wal_buffers=16MB -c default_statistics_target=100 -c random_page_cost=1.1 -c effective_io_concurrency=200 -c work_mem=16MB -c min_wal_size=1GB -c max_wal_size=4GB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  timescaledb_data:
+    driver: local

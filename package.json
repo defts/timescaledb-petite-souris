@@ -1,0 +1,22 @@
+{
+  "name": "timescaledb-petite-souris",
+  "version": "1.0.0",
+  "description": "Présentation TimescaleDB - Comment la Petite Souris gère ses milliards de dents",
+  "author": "David Torres Dias <david@torresdias.fr>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "slidev --open",
+    "build": "slidev build",
+    "export": "slidev export",
+    "preview": "slidev preview"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.49.0",
+    "@slidev/theme-default": "latest",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@iconify-json/carbon": "^1.1.0",
+    "@iconify-json/mdi": "^1.1.0"
+  }
+}
