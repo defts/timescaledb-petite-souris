@@ -1,6 +1,6 @@
 ---
 theme: default
-background: https://images.unsplash.com/photo-1606836576983-8b458e75221d?w=1920
+background: /images/petite-souris-hero.png
 title: Comment la Petite Souris gère ses milliards de dents avec TimescaleDB
 info: |
   ## TimescaleDB en Production
@@ -19,7 +19,7 @@ mdc: true
 
 # Comment la Petite Souris gère ses milliards de dents avec TimescaleDB
 
-Une histoire de séries temporelles à grande échelle
+Des séries temporelles à croquer
 
 <div class="pt-12">
   <span @click="$slidev.nav.next" class="px-2 py-1 rounded cursor-pointer" hover="bg-white bg-opacity-10">
@@ -28,7 +28,7 @@ Une histoire de séries temporelles à grande échelle
 </div>
 
 <div class="abs-br m-6 flex gap-2">
-  <span class="text-sm opacity-75">Meetup - 13 novembre 2024</span>
+  <span class="text-sm opacity-75">Meetup PostgreSQL Lille - 13 novembre 2025</span>
 </div>
 
 ---
@@ -42,9 +42,12 @@ layout: center
 
 ## David Torres Dias
 
-- DevOps & Dev Backend Go
-- Chez **Karnott** (Agriculture connectée)
-- Passionné par les bases de données
+- 👨‍💻 Développeur depuis bientôt **15 ans**
+- 🐘 Utilisateur PostgreSQL depuis **15 ans** (depuis la version 8.4 !)
+- 🐹 Amoureux de Go depuis **2015**
+- 🚜 DevOps & Dev Backend Go chez **Karnott** depuis **7 ans**
+- 📊 Mon histoire avec TimescaleDB a commencé chez Karnott
+- 💾 Passionné par les bases de données et l'optimisation
 - GitHub: @defts
 
 </div>
@@ -54,10 +57,101 @@ layout: center
 graph LR
     A[IoT Devices] --> B[Backend Go]
     B --> C[PostgreSQL<br/>+ TimescaleDB]
-    C --> D[30B points]
+    C --> D[37 milliards<br/>de points]
 ```
 
 </div>
+</div>
+
+---
+
+# C'est quoi TimescaleDB ?
+
+<div class="mt-8">
+
+## Une extension PostgreSQL
+
+- 📦 **Extension PostgreSQL** pour les séries temporelles
+- ✅ **100% compatible** PostgreSQL (juste `CREATE EXTENSION`)
+- 🔓 **Open source** (Apache 2.0) + version cloud disponible
+- 🚀 Utilisé par milliers d'entreprises (Cisco, IBM, Karnott, Warner Music...)
+
+## Le concept clé : Hypertables
+
+```sql
+-- 1. Table normale PostgreSQL
+CREATE TABLE metrics (time TIMESTAMPTZ, device_id INT, value FLOAT);
+
+-- 2. La transformer en hypertable
+SELECT create_hypertable('metrics', 'time');
+```
+
+<v-click>
+
+➡️ **Partitionnement automatique** par période (chunks)
+
+➡️ **API PostgreSQL standard** (SELECT, INSERT, INDEX...)
+
+➡️ **Optimisations automatiques** pour les requêtes temporelles
+
+</v-click>
+
+</div>
+
+---
+
+# Les superpowers de TimescaleDB
+
+<div class="grid grid-cols-3 gap-6 mt-8">
+
+<div class="text-center">
+
+### 🚀 PostgreSQL surchargé
+
+S'appuie sur le même PostgreSQL que vous connaissez et aimez, avec un SQL complet, une fiabilité à toute épreuve et un écosystème massif.
+
+</div>
+
+<div class="text-center">
+
+### 🔄 Relationnel & séries temporelles
+
+Simplifiez votre stack, posez des questions plus complexes et construisez des applications plus puissantes.
+
+</div>
+
+<div class="text-center">
+
+### ☁️ Opérations sans souci
+
+Laissez-nous gérer TimescaleDB pour vous, entièrement managé sur AWS, Azure ou GCP dans plus de 75 régions.
+
+</div>
+
+<div class="text-center">
+
+### 💰 Coûts réduits
+
+Dépensez moins avec des taux de compression de **94%** grâce aux meilleurs algorithmes et autres améliorations de performance.
+
+</div>
+
+<div class="text-center">
+
+### 📈 Échelle massive
+
+Écrivez des millions de points de données par seconde. Stockez des centaines de téraoctets ou des pétaoctets.
+
+</div>
+
+<div class="text-center">
+
+### ⚡ Performances accélérées
+
+Obtenez des requêtes **10 à 100x plus rapides** que PostgreSQL, InfluxDB et MongoDB. Optimisations natives pour les séries temporelles.
+
+</div>
+
 </div>
 
 ---
@@ -66,18 +160,18 @@ layout: two-cols
 
 # Retour d'expérience Karnott
 
-## Les chiffres
+## Le contexte
 
-- **~30 milliards** de points de données
-- **~5 To** de stockage (11 To sans compression)
-- **Dizaines de millions** de nouvelles données/jour
-- **Millions** de requêtes/jour
+- 📍 Agriculture connectée (tracking GPS)
+- 📦 **37 milliards** de points de données
+- 🚜 Milliers d'engins agricoles
+- 📈 **10 hypertables** (location, events, logs, sensors...)
 
-## Stack technique
+## Stack technique actuelle
 
-- PostgreSQL 16 + **TimescaleDB** + PostGIS
-- Google Cloud Platform (Cloud SQL)
-- Kubernetes (GKE)
+- PostgreSQL 17 + **TimescaleDB 2.18** + PostGIS
+- **Google Cloud Platform**
+- VM (16 vCPUs, 64 GB RAM)
 
 ::right::
 
@@ -85,39 +179,42 @@ layout: two-cols
 
 ## Les cas d'usage
 
-- Tracking GPS des engins agricoles
+- Tracking GPS en temps réel
 - Calcul des surfaces travaillées
 - Répartition des travaux
-- Analyse temporelle
+- Analyse de productivité
+- Alertes et anomalies
 
-## Le problème
+## Le défi initial
 
-❌ Requêtes lentes sur gros volumes
 ❌ Stockage qui explose
-❌ Maintenance complexe
 
 </div>
 
 ---
 
-# Les gains mesurés
+# Les gains mesurés avec TimescaleDB
 
-<div class="mt-8">
+## Compression des données
 
-| Métrique | Avant | Après | Gain |
-|----------|-------|-------|------|
-| Requête "avg sur 7j par heure" | ~12s | ~0.8s | **15x** ⚡ |
-| Stockage données > 1 an | 11 To | 1.2 To | **90%** 📦 |
-| Temps de maintenance | 4h/mois | ~0h | **100%** 🎉 |
+| Hypertable | Avant | Après | Gain |
+|------------|-------|-------|------|
+| **device_event** | 4.6 TB | 119 GB | **97.5%** |
+| location | 5.9 TB | 394 GB | **93.4%** |
+| log | 1.8 TB | 87 GB | **95.2%** |
+| **Moyenne (10 tables)** | - | - | **94.7%** |
 
-</div>
+## Impact global
 
-<div class="mt-12 text-center">
-<v-click>
+- 💾 Stockage : **16 TB → 4 TB** (75% de réduction)
+- 🗜️ **12 TB économisés** grâce à la compression
+- ⚙️ Maintenance de compression : **Automatique** (policies)
+- 🎯 **10 001 chunks compressés** sur 18 976
 
-## → C'est pour ça qu'on parle de TimescaleDB aujourd'hui !
+<div class="mt-8 text-center">
 
-</v-click>
+### → C'est pour ça qu'on parle de TimescaleDB aujourd'hui !
+
 </div>
 
 ---
@@ -139,149 +236,107 @@ class: text-center
 
 ## Les chiffres du business
 
-<div class="grid grid-cols-2 gap-8 mt-8">
-<div>
-
 - **2 milliards** d'enfants dans le monde
 - **~20 dents** de lait par enfant
 - **Millions** de transactions par nuit
 - Pic d'activité entre 6 et 12 ans
 
-</div>
-<div>
+## Les défis techniques
 
-## Les questions métier
-
-1. Prix moyen par mois/pays ?
-2. Heures de pointe ?
-3. Villes les plus généreuses ?
-4. Inflation du prix de la dent ?
-5. Optimisation des tournées ?
-
-</div>
-</div>
+- Analyser des milliards de transactions
+- Requêtes temporelles complexes
+- Stockage qui explose
+- Besoin de performances en production
 
 ---
 
 # Le schéma de données
 
+<div class="grid grid-cols-2 gap-4 mt-4">
+<div>
+
+## Tables de référence
+
 ```sql
-CREATE TABLE tooth_loss (
-    time            TIMESTAMPTZ NOT NULL,  -- Quand la dent est tombée
-    child_id        INTEGER,               -- Quel enfant
-    tooth_number    INTEGER,               -- Quelle dent (1-20)
-    country         VARCHAR(2),            -- Pays
-    city            VARCHAR(100),          -- Ville
-    price           DECIMAL(10,2),         -- Prix payé
-    payment_method  VARCHAR(20)            -- cash, coin, gift
+-- 60 pays
+CREATE TABLE countries (
+    code TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    continent TEXT
+);
+
+-- 20 dents de lait
+CREATE TABLE teeth (
+    tooth_number INTEGER PRIMARY KEY,
+    tooth_name TEXT NOT NULL,
+    typical_age INTEGER
+);
+
+-- 50 millions d'enfants
+CREATE TABLE children (
+    child_id BIGINT PRIMARY KEY,
+    birth_date DATE,
+    country_code TEXT REFERENCES countries(code)
 );
 ```
 
-<v-click>
+</div>
+<div>
 
-## Le problème avec PostgreSQL classique
+## Hypertable (séries temporelles)
 
-- Table qui grossit exponentiellement 📈
-- Requêtes qui ralentissent 🐌
-- Partition manuelle complexe 😰
-- Pas de compression native efficace 💾
+```sql
+CREATE TABLE tooth_loss (
+    time TIMESTAMPTZ NOT NULL,
+    child_id BIGINT
+        REFERENCES children(child_id),
+    tooth_number INTEGER
+        REFERENCES teeth(tooth_number),
+    country_code TEXT
+        REFERENCES countries(code),
+    city TEXT,
+    price DECIMAL(4,2) CHECK (price >= 0)
+);
 
-</v-click>
+-- Transformer en hypertable
+SELECT create_hypertable(
+    'tooth_loss', 'time'
+);
+```
+
+**→ PostgreSQL complet + séries temporelles !**
+
+</div>
+</div>
 
 ---
 layout: center
+class: text-center
 ---
 
-# DÉMO 1 : Le problème PostgreSQL
-
-<div class="text-sm opacity-75 mt-4">
-(Live coding - montrer une requête lente)
-</div>
-
----
-
-# TimescaleDB : Les bases
-
-<div class="grid grid-cols-2 gap-8 mt-8">
-<div>
-
-## Qu'est-ce que TimescaleDB ?
-
-- **Extension** PostgreSQL (pas un fork !)
-- 100% compatible PostgreSQL
-- Spécialisé séries temporelles
-- Open source
-
-</div>
-<div>
-
-## Les concepts clés
-
-**Hypertable** : table virtuelle qui partitionne automatiquement
-
-**Chunks** : partitions sous le capot (par défaut 7 jours)
-
-→ Transparent pour l'utilisateur (SQL standard)
-
-</div>
-</div>
-
----
-
-# DÉMO 2 : Installation et première hypertable
-
-```sql
--- 1. Activer l'extension
-CREATE EXTENSION IF NOT EXISTS timescaledb;
-
--- 2. Créer la table (SQL classique)
-CREATE TABLE tooth_loss (
-    time TIMESTAMPTZ NOT NULL,
-    child_id INTEGER,
-    tooth_number INTEGER,
-    country VARCHAR(2),
-    city VARCHAR(100),
-    price DECIMAL(10,2),
-    payment_method VARCHAR(20)
-);
-
--- 3. Transformer en hypertable (la magie opère !)
-SELECT create_hypertable('tooth_loss', 'time');
-```
+# La solution : TimescaleDB
 
 <v-click>
 
-## ✅ C'est tout ! TimescaleDB gère maintenant le partitionnement automatiquement
+Transformons cette table en hypertable et explorons les fonctionnalités !
 
 </v-click>
 
----
+<v-click>
 
-# DÉMO 2 (suite) : Génération de données
+<div class="mt-12">
 
-```sql
--- Générer ~100M de lignes sur 5 ans
-INSERT INTO tooth_loss
-SELECT
-    time,
-    (random() * 2000000000)::int as child_id,
-    (random() * 20 + 1)::int as tooth_number,
-    (ARRAY['FR', 'DE', 'ES', 'IT', 'US', 'UK', ...])[...] as country,
-    'City_' || (random() * 10000)::int as city,
-    (random() * 10 + 0.5)::decimal(10,2) as price,
-    CASE WHEN random() < 0.7 THEN 'cash'
-         WHEN random() < 0.9 THEN 'coin'
-         ELSE 'gift' END as payment_method
-FROM generate_series(
-    NOW() - INTERVAL '5 years',
-    NOW(),
-    INTERVAL '1.5 seconds'
-) AS time;
-```
+→ **time_bucket** pour les agrégations temporelles
 
-<div class="text-sm opacity-75 mt-4">
-⏱️ Temps d'exécution : 2-3 minutes
+→ **Compression** pour réduire le stockage
+
+→ **Continuous Aggregates** pour les performances
+
+→ **Retention** pour la maintenance automatique
+
 </div>
+
+</v-click>
 
 ---
 
@@ -304,6 +359,7 @@ ORDER BY month;
 ```
 
 ❌ Limité aux intervalles standards
+
 ❌ Pas optimisé pour les hypertables
 
 </div>
@@ -313,17 +369,19 @@ ORDER BY month;
 
 ```sql
 SELECT
-    time_bucket('1 month', time) AS month,
+    time_bucket('6 hours', time) AS bucket,
     AVG(price) as avg_price,
     COUNT(*) as transactions
 FROM tooth_loss
-WHERE time > NOW() - INTERVAL '1 year'
-GROUP BY month
-ORDER BY month;
+WHERE time > NOW() - INTERVAL '1 week'
+GROUP BY bucket
+ORDER BY bucket;
 ```
 
-✅ Intervalles flexibles
+✅ Intervalles flexibles (6h, 90min, 15 jours...)
+
 ✅ Optimisé pour TimescaleDB
+
 ✅ Beaucoup plus rapide !
 
 </div>
@@ -331,16 +389,20 @@ ORDER BY month;
 
 ---
 
-# DÉMO 3 : Requêtes temporelles
+# DÉMO : Requêtes temporelles
 
 ## Exemples de requêtes métier
 
-1. Prix moyen par mois
-2. Pics d'activité par heure
-3. Top villes généreuses
-4. Évolution hebdomadaire avec window functions
-5. Analyse par jour de la semaine
-6. Intervalle custom (toutes les 6 heures)
+<!-- TODO: À définir après avoir testé les requêtes du script 03-queries.sql
+Idées:
+- Prix moyen par période (mois, semaine...)
+- Pics d'activité par heure
+- Top villes les plus généreuses
+- Évolution hebdomadaire avec window functions
+- Analyse par jour de la semaine
+-->
+
+**À définir après tests des requêtes**
 
 <div class="text-sm opacity-75 mt-8">
 (Live coding - montrer les performances)
@@ -355,22 +417,11 @@ ORDER BY month;
 
 ## 🗜️ Compression
 
-Réduction de **90%** du stockage
+Réduction de **~95%** du stockage
 
 Données anciennes rarement modifiées
 
 Performances maintenues
-
-</div>
-<div class="text-center">
-
-## 🗑️ Retention
-
-Suppression automatique des vieilles données
-
-Libération d'espace
-
-Maintenance zéro
 
 </div>
 <div class="text-center">
@@ -384,85 +435,45 @@ Mise à jour automatique
 Requêtes instantanées
 
 </div>
+<div class="text-center">
+
+## 🗑️ Retention
+
+Suppression automatique des vieilles données
+
+Libération d'espace
+
+Maintenance zéro
+
+</div>
 </div>
 
 ---
 
-# DÉMO 4 : Compression
+# DÉMO : Compression
 
 ```sql
--- 1. Activer la compression
-ALTER TABLE tooth_loss SET (
-    timescaledb.compress,
-    timescaledb.compress_segmentby = 'country',
-    timescaledb.compress_orderby = 'time DESC'
-);
+-- 1. Voir les stats de compression
+SELECT * FROM hypertable_compression_stats('tooth_loss');
 
--- 2. Compresser les chunks > 7 jours
-SELECT compress_chunk(chunk)
-FROM timescaledb_information.chunks
-WHERE hypertable_name = 'tooth_loss'
-  AND range_end < NOW() - INTERVAL '7 days';
-
--- 3. Policy automatique
-SELECT add_compression_policy('tooth_loss', INTERVAL '7 days');
+-- 2. Stats par chunk
+SELECT * FROM chunk_compression_stats('tooth_loss')
+WHERE compression_status = 'Compressed'
+ORDER BY before_compression_total_bytes DESC
+LIMIT 10;
 ```
 
 <div class="text-center mt-8">
 <v-click>
 
-## 📊 Résultat : 10 Go → 1 Go (90% de réduction) 🎉
+## 📊 Résultat : ~95% de compression en moyenne 🎉
 
 </v-click>
 </div>
 
 ---
 
-# DÉMO 5 : Retention Policies
-
-```sql
--- Supprimer automatiquement les données > 3 ans
-SELECT add_retention_policy('tooth_loss', INTERVAL '3 years');
-```
-
-<div class="mt-8">
-
-## Stratégie recommandée
-
-<div class="grid grid-cols-3 gap-4 mt-4">
-<div>
-
-**0-7 jours**
-
-NON compressées
-
-Modifiables
-
-</div>
-<div>
-
-**7j - 3 ans**
-
-COMPRESSÉES
-
-Lecture seule
-
-</div>
-<div>
-
-**> 3 ans**
-
-SUPPRIMÉES
-
-Automatiquement
-
-</div>
-</div>
-</div>
-
----
-
-# DÉMO 6 : Continuous Aggregates
+# DÉMO : Continuous Aggregates
 
 ```sql
 -- 1. Créer une vue matérialisée continue
@@ -487,22 +498,29 @@ SELECT add_continuous_aggregate_policy('daily_stats',
 
 ---
 
-# Performances : Avant/Après
+# DÉMO : Retention Policies
 
-<div class="mt-12">
+```sql
+-- 1. Voir les données actuelles
+SELECT
+    COUNT(*) as total_rows,
+    MIN(time) as oldest_data,
+    MAX(time) as newest_data,
+    age(MAX(time), MIN(time)) as data_span
+FROM tooth_loss;
 
-| Requête | Sans Continuous Aggregate | Avec Continuous Aggregate | Gain |
-|---------|--------------------------|---------------------------|------|
-| Stats journalières (6 mois) | ~8 secondes | ~0.1 seconde | **80x** |
-| Stats mensuelles (5 ans) | ~15 secondes | ~0.2 seconde | **75x** |
-| Top villes (1 an) | ~5 secondes | ~0.08 seconde | **60x** |
+-- 2. Ajouter une policy de rétention (1 ligne !)
+SELECT add_retention_policy('tooth_loss', INTERVAL '3 years');
 
-</div>
+-- 3. Voir les policies actives
+SELECT * FROM timescaledb_information.jobs
+WHERE proc_name = 'policy_retention';
+```
 
-<div class="text-center mt-12">
+<div class="text-center mt-8">
 <v-click>
 
-## 🚀 Et ça se rafraîchit automatiquement !
+## 🗑️ Les données > 3 ans seront supprimées automatiquement
 
 </v-click>
 </div>
@@ -518,7 +536,7 @@ layout: two-cols
 - Extension PostgreSQL (pas de migration)
 - Partitionnement automatique
 - time_bucket = agrégations puissantes
-- Compression native (~90%)
+- Compression native (~95%)
 - Retention automatique
 - Continuous aggregates
 - Production-ready
@@ -555,7 +573,7 @@ layout: two-cols
 
 ## 🎯 Cette présentation
 
-- Repo GitHub : [github.com/defts/prez-timescaledb](https://github.com/defts/prez-timescaledb)
+- Repo GitHub : [github.com/defts/timescaledb-petite-souris](https://github.com/defts/timescaledb-petite-souris)
 - Tous les scripts SQL
 - Docker Compose prêt à l'emploi
 - Documentation complète

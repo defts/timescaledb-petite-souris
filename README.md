@@ -1,6 +1,6 @@
 # Comment la Petite Souris gère ses milliards de dents avec TimescaleDB
 
-> Présentation pour le meetup du 13 novembre 2024  
+> Présentation pour le Meetup PostgreSQL Lille - 13 novembre 2025
 > Par David Torres Dias - DevOps chez Karnott
 
 ## 📋 Vue d'ensemble

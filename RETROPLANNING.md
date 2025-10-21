@@ -1,4 +1,4 @@
-# Rétro-planning Meetup TimescaleDB - 13 novembre 2024
+# Rétro-planning Meetup PostgreSQL Lille - 13 novembre 2025
 
 ## 📅 Semaine 1 : 15-20 octobre (Fondations)
 

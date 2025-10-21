@@ -23,12 +23,15 @@
 DB_HOST = localhost
 DB_PORT = 5432
 DB_USER = postgres
-DB_NAME = postgres
+DB_NAME = petite_souris
 DB_PASSWORD = password
 
-# Commande psql
+# Commande psql (pour se connecter à la base petite_souris)
 PSQL = PGPASSWORD=$(DB_PASSWORD) psql -h $(DB_HOST) -p $(DB_PORT) -U $(DB_USER) -d $(DB_NAME)
 PSQL_FILE = $(PSQL) -f
+
+# Commande psql pour se connecter à la base postgres (pour le script 01 qui crée la base)
+PSQL_POSTGRES = PGPASSWORD=$(DB_PASSWORD) psql -h $(DB_HOST) -p $(DB_PORT) -U $(DB_USER) -d postgres
 
 # Couleurs pour l'output
 RED = \033[0;31m
@@ -126,9 +129,9 @@ status: ## Statut des containers
 # ============================================================================
 
 .PHONY: 01
-01: ## Script 01: Setup initial
+01: ## Script 01: Setup initial (crée la base petite_souris)
 	@echo "$(GREEN)🦷 === Script 01: Setup initial ===$(NC)"
-	@$(PSQL_FILE) scripts/01-setup.sql
+	@$(PSQL_POSTGRES) -f scripts/01-setup.sql
 	@echo ""
 
 .PHONY: 02
