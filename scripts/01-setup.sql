@@ -4,20 +4,18 @@
 -- Ce script crée la base de données petite_souris, l'extension TimescaleDB,
 -- les tables et transforme tooth_loss en hypertable.
 --
--- Usage: psql -h localhost -U postgres -d postgres -f scripts/01-setup.sql
+-- Usage:
+--   make 01         (1M enfants - défaut)
+--   make 01-test    (100 enfants - test rapide)
+--   make 01-prod    (50M enfants - production)
 --
--- Configuration :
---   Modifier NUM_CHILDREN ci-dessous pour ajuster le nombre d'enfants générés
---   - Test rapide    : 100
---   - Test moyen     : 100000 (100k)
---   - Production     : 50000000 (50M)
+-- Ou directement :
+--   psql -h localhost -U postgres -d postgres -v num_children=1000000 -f scripts/01-setup.sql
 -- ============================================================================
-
-\set NUM_CHILDREN 100
 
 \echo '🦷 === Setup TimescaleDB pour la Petite Souris ==='
 \echo ''
-\echo '⚙️  Configuration: ':NUM_CHILDREN' enfants seront générés'
+\echo '⚙️  Configuration: ':num_children' enfants seront générés'
 \echo ''
 
 -- Créer la base de données
@@ -36,6 +34,13 @@ CREATE DATABASE petite_souris;
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
 \echo '✅ Extension TimescaleDB activée'
+\echo ''
+
+-- Activer l'extension TimescaleDB Toolkit (pour les hyperfunctions)
+\echo '📦 Activation de TimescaleDB Toolkit (hyperfunctions)...'
+CREATE EXTENSION IF NOT EXISTS timescaledb_toolkit;
+
+\echo '✅ TimescaleDB Toolkit activé (stats_agg, percentile_agg, etc.)'
 \echo ''
 
 -- Créer la table countries
@@ -177,7 +182,7 @@ SELECT
     (CURRENT_DATE - INTERVAL '18 years') + (random() * 365 * 12)::INTEGER * INTERVAL '1 day' AS birth_date,
     -- Choisir un pays aléatoire parmi les 60
     codes[1 + floor(random() * array_length(codes, 1))::INTEGER] AS country_code
-FROM generate_series(1, :NUM_CHILDREN) AS child_id, country_array;
+FROM generate_series(1, :num_children) AS child_id, country_array;
 
 \echo '✅ Enfants générés'
 \echo ''
@@ -185,24 +190,48 @@ FROM generate_series(1, :NUM_CHILDREN) AS child_id, country_array;
 -- Créer la table tooth_loss
 \echo '🏗️  Création de la table tooth_loss...'
 CREATE TABLE IF NOT EXISTS tooth_loss (
-    time            TIMESTAMPTZ NOT NULL,  -- Timestamp de perte de dent
+    collected_at    TIMESTAMPTZ NOT NULL,  -- Timestamp de collecte par la petite souris
     child_id        BIGINT REFERENCES children(child_id),  -- ID de l'enfant (FK vers children)
     tooth_number    INTEGER REFERENCES teeth(tooth_number),  -- Numéro de la dent (FK vers teeth)
     country_code    TEXT REFERENCES countries(code),  -- Code pays (FK vers countries)
-    city            TEXT,                  -- Ville
     price           DECIMAL(4,2) CHECK (price >= 0)  -- Prix payé (0.00 à 99.99)
     -- Note: Pas de UNIQUE (child_id, tooth_number) car incompatible avec les hypertables
-    -- TimescaleDB exige que toute contrainte UNIQUE inclue la colonne de partitionnement (time)
+    -- TimescaleDB exige que toute contrainte UNIQUE inclue la colonne de partitionnement (collected_at)
     -- Dans une vraie application, cette contrainte serait gérée au niveau applicatif
 );
 
 \echo '✅ Table tooth_loss créée'
 \echo ''
 
+-- Créer la table de tracking de l'état de génération
+\echo '📊 Création de la table data_generation_state...'
+CREATE TABLE IF NOT EXISTS data_generation_state (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    last_fill_date TIMESTAMPTZ NOT NULL,  -- Dernière date jusqu'à laquelle on a rempli la base
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Quand cet état a été mis à jour
+    CONSTRAINT singleton_state CHECK (id = 1)  -- Assure qu'il n'y a qu'une seule ligne
+);
+
+-- Insérer l'état initial (début = maintenant)
+INSERT INTO data_generation_state (id, last_fill_date, updated_at)
+VALUES (1, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+\echo '✅ Table data_generation_state créée (track la dernière date de remplissage)'
+\echo ''
+
 -- Transformer la table en hypertable
--- Les données seront automatiquement partitionnées en chunks de 7 jours
-\echo '⚡ Transformation en hypertable (partitionnement automatique)...'
-SELECT create_hypertable('tooth_loss', 'time', if_not_exists => TRUE);
+-- Les données seront automatiquement partitionnées :
+-- - Temporellement : chunks de 7 jours (par défaut)
+-- - Spatialement : par country_code (4 partitions)
+\echo '⚡ Transformation en hypertable (partitionnement temporel + spatial)...'
+SELECT create_hypertable(
+    'tooth_loss',
+    by_range('collected_at', INTERVAL '7 day'),
+    partitioning_column => 'country_code',
+    number_partitions => 4,
+    if_not_exists => TRUE
+);
 
 \echo '✅ Hypertable créée avec succès !'
 \echo ''
@@ -210,16 +239,13 @@ SELECT create_hypertable('tooth_loss', 'time', if_not_exists => TRUE);
 -- Créer des index pour optimiser les requêtes
 \echo '🔍 Création des index...'
 CREATE INDEX IF NOT EXISTS idx_tooth_loss_country_time
-    ON tooth_loss (country_code, time DESC);
-
-CREATE INDEX IF NOT EXISTS idx_tooth_loss_city_time
-    ON tooth_loss (city, time DESC);
+    ON tooth_loss (country_code, collected_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_tooth_loss_child
-    ON tooth_loss (child_id, time DESC);
+    ON tooth_loss (child_id, collected_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_tooth_loss_tooth
-    ON tooth_loss (tooth_number, time DESC);
+    ON tooth_loss (tooth_number, collected_at DESC);
 
 \echo '✅ Index créés'
 \echo ''
