@@ -1,11 +1,11 @@
 -- -- Activer la compression avec stratégie par pays
 -- ALTER TABLE tooth_loss SET (
---     timescaledb.compress,
---     timescaledb.compress_segmentby = 'country_code'
+--     timescaledb.enable_columnstore,
+--     timescaledb.segmentby = 'country_code'
 -- );
 --
 -- -- Créer une policy : compresser automatiquement les données > 7 jours
--- SELECT add_compression_policy('tooth_loss', INTERVAL '7 days');
+-- SELECT add_columnstore_policy('tooth_loss', INTERVAL '7 days');
 --
 -- ============================================================================
 
@@ -34,7 +34,7 @@ WHERE ccs.compression_status = 'Compressed'
 ORDER BY ccs.before_compression_total_bytes DESC
 LIMIT 10;
 
--- requete dans des données compresées
+-- requete dans des données compressées
 SELECT
     country_code,
     COUNT(*) as nb_dents,
@@ -52,5 +52,5 @@ SELECT
     config::json->>'compress_after' as compress_after,
     next_start as prochaine_execution
 FROM timescaledb_information.jobs
-WHERE proc_name = 'policy_compression';
+WHERE proc_name IN ('policy_compression', 'policy_columnstore');
 

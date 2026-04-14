@@ -35,6 +35,8 @@ FROM timescaledb_information.jobs
 WHERE proc_name = 'policy_refresh_continuous_aggregate';
 
 
+-- BONUS (si le temps le permet) : cagg hiérarchique avec rollup()
+-- On peut agréger une cagg dans une autre cagg !
 -- CREATE MATERIALIZED VIEW monthly_revenue_stats
 -- WITH (timescaledb.continuous, timescaledb.materialized_only = false) AS
 SELECT

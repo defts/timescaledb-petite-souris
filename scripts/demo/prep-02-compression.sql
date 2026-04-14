@@ -13,8 +13,8 @@
 -- Activer la compression avec stratégie par pays
 \echo '1️⃣  Activation de la compression...'
 ALTER TABLE tooth_loss SET (
-    timescaledb.compress,
-    timescaledb.compress_segmentby = 'country_code'
+    timescaledb.enable_columnstore,
+    timescaledb.segmentby = 'country_code'
 );
 
 \echo '✅ Compression activée'
@@ -22,7 +22,7 @@ ALTER TABLE tooth_loss SET (
 
 -- Créer une policy : compresser automatiquement les données > 7 jours
 \echo '2️⃣  Création de la policy de compression automatique...'
-SELECT add_compression_policy('tooth_loss', INTERVAL '7 days');
+SELECT add_columnstore_policy('tooth_loss', INTERVAL '7 days');
 
 \echo '✅ Policy créée (compression auto des données > 7 jours)'
 \echo ''
@@ -31,7 +31,7 @@ SELECT add_compression_policy('tooth_loss', INTERVAL '7 days');
 \echo '3️⃣  Compression manuelle des chunks anciens (peut prendre 1-2 min)...'
 \echo ''
 
-SELECT compress_chunk(i, if_not_compressed => true)
+SELECT convert_to_columnstore(i, if_not_columnstore => true)
 FROM show_chunks('tooth_loss', older_than => INTERVAL '7 days') i;
 
 \echo ''
@@ -47,8 +47,8 @@ SELECT
     pg_size_pretty(after_compression_total_bytes) as taille_apres,
     ROUND((1 - after_compression_total_bytes::float / before_compression_total_bytes) * 100, 1) as gain_pourcent,
     number_compressed_chunks as chunks_compresses,
-    number_uncompressed_chunks as chunks_non_compresses
-FROM hypertable_compression_stats('tooth_loss');
+    (total_chunks - number_compressed_chunks) as chunks_non_compresses
+FROM hypertable_columnstore_stats('tooth_loss');
 
 \echo ''
 \echo '🎉 Préparation terminée !'

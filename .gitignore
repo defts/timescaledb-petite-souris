@@ -51,3 +51,8 @@ logs/
 # OS
 Thumbs.db
 .DS_Store
+
+# Commercial fonts: not redistributable, keep them local (see devoxx-2026/README.md)
+devoxx-2026/fonts/Calibri/
+devoxx-2026/fonts/Conthrax/
+devoxx-2026/fonts/Pirulen/

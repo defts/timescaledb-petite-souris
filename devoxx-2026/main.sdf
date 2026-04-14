@@ -1,0 +1,685 @@
+/::
+add_styles: devoxx_fr/theme.css
+add_scripts: devoxx_fr/theme.js
+::/
+
+## .[main-slide]
+
+# Comment la Petite Souris gère ses milliards de dents avec TimescaleDB
+
+## .[simple-slide]
+
+<div class="content">
+
+<div class="title">
+<h1>Qui suis-je ?</h1>
+<p style="font-size: 3vw; color: var(--color-main-white); margin-top: 0.3em;">David Torres Dias</p>
+</div>
+
+<ul>
+<li>Développeur depuis bientôt <strong>15 ans</strong></li>
+<li>Utilisateur PostgreSQL depuis <strong>10 ans+</strong> (depuis la version 9.4 !)</li>
+<li>Amoureux de Go depuis <strong>2015</strong></li>
+<li>DevOps & Dev Backend Go chez <strong>Karnott</strong> depuis <strong>7 ans</strong></li>
+<li>GitHub: <strong>@defts</strong></li>
+</ul>
+
+<div class="highlight-box">
+IoT Devices → Backend Go → PostgreSQL + TimescaleDB → <strong>37 milliards de points</strong>
+</div>
+
+</div>
+
+/*
+**Timing : 30 secondes**
+- Rapide : nom + rôle chez Karnott
+- Insister sur : 15 ans PostgreSQL (légitimité)
+- Karnott = agriculture connectée, IoT, GPS
+- 37 milliards de points = crédibilité pour parler de scale
+- Transition : "Mon histoire avec TimescaleDB a commencé chez Karnott"
+*/
+
+## .[simple-slide]
+
+
+<div class="content">
+
+<div class="title">
+<h1>C'est quoi TimescaleDB ?</h1>
+<p style="font-size: 3vw; color: var(--color-main-white); margin-top: 0.3em;">Une extension PostgreSQL</p>
+</div>
+
+<ul>
+<li><strong>Extension PostgreSQL</strong> pour les séries temporelles</li>
+<li><strong>100% compatible</strong> (juste <code>CREATE EXTENSION</code>)</li>
+<li><strong>Open source</strong> (Apache 2.0 / TSL)</li>
+<li>Utilisé par Cloudflare, le CERN, Karnott...</li>
+</ul>
+
+<h2>Le concept clé : Hypertables</h2>
+
+<pre><code>CREATE TABLE metrics (time TIMESTAMPTZ, device_id INT, value FLOAT);
+SELECT create_hypertable('metrics', 'time');</code></pre>
+
+<p>→ Partitionnement automatique • API PostgreSQL • Optimisations</p>
+
+</div>
+
+/*
+**Timing : 1 minute**
+- Extension PostgreSQL = pas de migration, juste CREATE EXTENSION
+- 100% compatible = toutes les features PostgreSQL disponibles
+- Open source = transparence, communauté
+- Hypertables = concept clé (partitionnement automatique invisible)
+- Insister sur la simplicité : "Juste 2 lignes de SQL"
+*/
+
+## .[simple-slide]
+
+<div class="content" style="align-items: center; text-align: center;">
+
+<h1>Mais pour vous montrer concrètement...</h1>
+<p style="font-size: 3.5vw; color: var(--color-main-white); margin-top: 1em;">On va parler de la <strong>Petite Souris</strong> !</p>
+
+
+</div>
+
+
+/*
+**Timing : 10 secondes**
+- Transition ludique : "Pour vous montrer concrètement, on va quitter les tracteurs..."
+- Sourire, créer de la légèreté après les chiffres techniques
+- Cette slide est un break, une respiration
+*/
+
+## .[simple-slide]
+
+
+<div class="content">
+
+<div class="title">
+<h1>Le cas de la Petite Souris SA</h1>
+</div>
+
+<div class="two-cols" style="margin-top: 1em; align-items: start;">
+<div>
+<h2>Les chiffres</h2>
+<ul>
+<li><strong>2 milliards</strong> d'enfants dans le monde</li>
+<li><strong>~20 dents</strong> de lait par enfant</li>
+<li><strong>Millions</strong> de transactions par nuit</li>
+<li>Pic d'activité entre 6 et 12 ans</li>
+</ul>
+</div>
+<div>
+<h2>Les défis techniques</h2>
+<ul>
+<li>Analyser des milliards de transactions</li>
+<li>Requêtes temporelles complexes</li>
+<li>Stockage qui explose</li>
+<li>Besoin de performances en production</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+/*
+**Timing : 30 secondes**
+- Contexte ludique mais réaliste : 2 milliards d'enfants, 20 dents
+- Millions de transactions par nuit = problème de scale similaire à Karnott
+- Faire le lien : "Mêmes défis que chez Karnott, mais avec des dents !"
+*/
+
+## .[no-title-slide]
+
+
+<div class="content small-text">
+
+<h1>Le schéma de données</h1>
+
+<div class="two-cols">
+<div>
+<h2>Tables de référence</h2>
+<pre><code>-- 60 pays
+CREATE TABLE countries (
+    code TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    continent TEXT
+);
+
+-- 20 dents de lait
+CREATE TABLE teeth (
+    tooth_number INTEGER PRIMARY KEY,
+    tooth_name TEXT NOT NULL,
+    typical_age INTEGER
+);
+
+-- 50 millions d'enfants
+CREATE TABLE children (
+    child_id BIGINT PRIMARY KEY,
+    birth_date DATE,
+    country_code TEXT REFERENCES countries(code)
+);</code></pre>
+</div>
+<div>
+<h2>Hypertable</h2>
+<pre><code>CREATE TABLE tooth_loss (
+    collected_at TIMESTAMPTZ NOT NULL,
+    child_id BIGINT
+        REFERENCES children(child_id),
+    tooth_number INTEGER
+        REFERENCES teeth(tooth_number),
+    country_code TEXT
+        REFERENCES countries(code),
+    price DECIMAL(4,2) CHECK (price >= 0)
+);
+
+-- Forme simple (suffit souvent)
+SELECT create_hypertable('tooth_loss', 'collected_at');
+
+-- Forme avancée (chunk size + dimension spatiale)
+SELECT create_hypertable(
+    'tooth_loss',
+    by_range('collected_at', INTERVAL '7 day')
+);
+SELECT add_dimension(
+    'tooth_loss',
+    by_hash('country_code', 4)
+);</code></pre>
+</div>
+</div>
+
+</div>
+
+/*
+**Timing : 1 minute 30**
+- À gauche : tables de référence classiques (countries, teeth, children)
+- À droite : LA table importante = tooth_loss (hypertable)
+- Montrer le code : create_hypertable avec ses paramètres
+- Insister : c'est du PostgreSQL standard + 1 fonction TimescaleDB
+
+Structure tooth_loss :
+- collected_at = colonne temporelle (TIMESTAMPTZ obligatoire)
+- child_id, tooth_number = données métier
+- country_code = clé de partitionnement spatial (dimension)
+- price = la donnée à analyser
+
+Partitionnement (IMPORTANT) :
+- Temporel : chunks de 7 jours (automatique par défaut)
+- Spatial : 4 partitions par country_code (explicite)
+- Pourquoi country_code ? → Optimise les requêtes par pays ET la compression !
+- Message clé : "Double partitionnement = performance + compression optimale"
+*/
+
+## .[no-title-slide]
+
+
+<div class="content">
+
+<h1>Architecture des chunks</h1>
+
+<img src="images/hypertable-chunks.svg" alt="Architecture des chunks TimescaleDB" />
+
+</div>
+
+/*
+**Timing : 30 secondes**
+- Visualisation du double partitionnement
+- Gauche : Les dents (données) arrivent de différents pays (couleurs)
+- Centre : L'hypertable reçoit tout
+- Droite : Les chunks sont organisés en grille 2D
+  - Axe horizontal (TIME) : older → newer
+  - Axe vertical (SPACE) : 4 partitions par country_code (hash)
+- Message clé : "Les chunks vieillissent horizontalement, se répartissent verticalement"
+*/
+
+## .[simple-slide]
+
+<div class="content" style="align-items: center; text-align: center;">
+
+<h1>La solution : TimescaleDB</h1>
+<p style="font-size: 3vw; color: var(--color-main-white); margin-top: 1em;">Explorons les fonctionnalités !</p>
+
+</div>
+
+
+/*
+**Timing : 5 secondes**
+- Transition rapide : "Maintenant qu'on a notre hypertable..."
+- Annoncer : "Je vais vous montrer 4 fonctionnalités clés en live"
+*/
+
+//@ < 05:00
+## .[simple-slide]
+
+
+<div class="content">
+
+<div class="title">
+<h1>Au programme</h1>
+</div>
+
+<div class="four-cols">
+<div>
+<h2>Hyperfunctions</h2>
+<p>gapfill, stats_agg</p>
+<p>Exclusives TimescaleDB</p>
+</div>
+<div>
+<h2>Compression</h2>
+<p><strong>~95%</strong> de réduction</p>
+<p>Automatique</p>
+</div>
+<div>
+<h2>Caggs</h2>
+<p>Pré-calcul</p>
+<p>10-100x plus rapide</p>
+</div>
+<div>
+<h2>Retention</h2>
+<p>Suppression auto</p>
+<p>Maintenance zéro</p>
+</div>
+</div>
+
+</div>
+
+/*
+**Timing : 30 secondes**
+Balayage rapide des 4 colonnes :
+1. Hyperfunctions : Fonctions exclusives TimescaleDB
+2. Compression : ~95% de réduction, automatique
+3. Caggs : Continuous Aggregates = pré-calcul, 10-100x plus rapide
+4. Retention : Suppression automatique, maintenance zéro
+- "4 fonctionnalités qu'on va voir EN LIVE dans DataGrip"
+*/
+
+## .[simple-slide]
+
+<div class="content" style="align-items: center; text-align: center;">
+
+<h1>DÉMO : Hyperfunctions</h1>
+<p style="font-size: 3vw; color: var(--color-main-white); margin-top: 1em;">Fonctions exclusives TimescaleDB</p>
+
+</div>
+
+
+//@ [] 06:00
+## .[no-title-slide]
+
+
+<div class="content">
+
+<h1>Hyperfunctions TimescaleDB</h1>
+
+<ul>
+<li><strong>time_bucket_gapfill()</strong> — Remplir les trous dans les séries temporelles</li>
+<li><strong>stats_agg()</strong> — Un scan, toutes les statistiques</li>
+<li><strong>Function pipelines</strong> (<code>-></code>) — Composition de fonctions lisible <em>(via timescaledb_toolkit)</em></li>
+<li><strong>Percentiles approximatifs</strong> — P50, P95, P99 ultra-rapides</li>
+</ul>
+
+</div>
+
+/*
+**Timing : 5 minutes (démo live dans DataGrip)**
+Script à exécuter : scripts/demo/01-hyperfunctions.sql
+
+Déroulé :
+1. PostgreSQL STANDARD vs time_bucket :
+   - Montrer la syntaxe horrible : extract('epoch')... / 1800 * 1800
+   - Puis time_bucket('30 minutes', collected_at) → Beaucoup plus lisible !
+   - Problème révélé : ~36-40 lignes au lieu de 48 attendues
+
+2. time_bucket_gapfill :
+   - Remplir les trous automatiquement → 48 lignes complètes
+   - Bonus : marche avec window functions (cumulative_teeth)
+
+3. stats_agg + percentile_agg :
+   - PostgreSQL standard : AVG, STDDEV, VARIANCE = ça marche mais 3 colonnes séparées
+   - TimescaleDB : stats_agg = UN objet agrégé, stockable dans une cagg
+   - Extraction à la demande : stats_agg -> average(), -> stddev() sans re-scanner
+   - Function pipelines (->) : syntaxe lisible et composable
+   - Percentiles approx : P50, P90 ultra-rapides
+
+Points clés :
+- Ces fonctions N'EXISTENT PAS dans PostgreSQL standard
+- stats_agg/percentile_agg et pipelines (->) nécessitent l'extension timescaledb_toolkit
+  (CREATE EXTENSION timescaledb_toolkit; — en plus de timescaledb)
+- Syntaxe lisible et composable avec ->
+*/
+
+//@ < 12:00
+//@ [] 03:00
+## .[no-title-slide]
+
+
+<div class="content small-text">
+
+<h1>DÉMO : Compression</h1>
+
+<pre><code>-- depuis TimescaleDB 2.18
+-- 1. Activer la compression avec stratégie par pays
+ALTER TABLE tooth_loss SET (
+    timescaledb.enable_columnstore,
+    timescaledb.segmentby = 'country_code'
+);
+
+-- 2. Policy : compresser automatiquement les données > 7 jours
+SELECT add_columnstore_policy('tooth_loss', INTERVAL '7 days');
+
+-- 3. Compresser manuellement les chunks existants
+SELECT convert_to_columnstore(i, if_not_columnstore => true)
+FROM show_chunks('tooth_loss', older_than => INTERVAL '7 days') i;
+
+-- avant TimescaleDB 2.18
+-- ALTER TABLE tooth_loss SET (
+--     timescaledb.compress,
+--     timescaledb.compress_segmentby = 'country_code'
+-- );
+-- SELECT add_compression_policy('tooth_loss', INTERVAL '7 days');
+-- SELECT compress_chunk(i, if_not_compressed => true)
+-- FROM show_chunks('tooth_loss', older_than => INTERVAL '7 days') i;</code></pre>
+
+</div>
+
+/*
+**Timing : 3 minutes (démo live dans DataGrip)**
+Script à exécuter : scripts/demo/02-compression.sql
+⚠️ IMPORTANT : scripts/demo/prep-02-compression.sql doit être exécuté AVANT la prez
+
+Déroulé :
+1. Montrer le code de la slide (NE PAS l'exécuter en live)
+2. Stats globales de compression :
+   - hypertable_compression_stats('tooth_loss')
+   - Montrer : taille avant/après, gain % (~95%)
+   - Insister : 16TB → 6TB chez Karnott = 1 800 €/mois économisés !
+3. Détail par chunk (optionnel si temps)
+4. Requêtes sur données compressées :
+   - Ça marche exactement pareil ! Décompression transparente
+   - On peut INSERT/UPDATE/DELETE sur chunks compressés
+5. Policy automatique : s'exécute toutes les 4 heures, maintenance zéro !
+
+Message clé : compress_segmentby = 'country_code' était un choix stratégique
+*/
+
+//@ < 16:00
+//@ [] 03:00
+## .[no-title-slide]
+
+
+<div class="content small-text">
+
+<h1>DÉMO : Continuous Aggregates</h1>
+
+<pre><code>-- 1. Créer une vue matérialisée continue avec hyperfunctions + real-time
+CREATE MATERIALIZED VIEW daily_revenue_stats
+WITH (timescaledb.continuous, timescaledb.materialized_only = false) AS
+SELECT
+    time_bucket('1 day', collected_at) AS day,
+    country_code,
+    stats_agg(price) as price_stats,
+    percentile_agg(price) as price_percentiles
+FROM tooth_loss
+GROUP BY day, country_code;
+
+-- 2. Policy de rafraîchissement automatique
+SELECT add_continuous_aggregate_policy('daily_revenue_stats',
+    start_offset => INTERVAL '1 month',
+    end_offset => INTERVAL '1 hour',
+    schedule_interval => INTERVAL '1 hour'
+);</code></pre>
+
+</div>
+
+/*
+**Timing : 3 minutes (démo live dans DataGrip)**
+Script à exécuter : scripts/demo/03-caggs.sql
+⚠️ IMPORTANT : scripts/demo/prep-03-caggs.sql doit être exécuté AVANT la prez
+
+Déroulé :
+1. Montrer le code de la slide (NE PAS l'exécuter en live)
+   - materialized_only = false → real-time !
+   - Utilise stats_agg + percentile_agg (hyperfunctions de la démo 1)
+2. Requête sur la continuous aggregate (France, dernier mois)
+   - Extraire stats avec function pipelines : average(), approx_percentile()
+   - Ultra rapide !
+3. Comparaison LE PUNCH :
+   - EXPLAIN ANALYZE sur percentile_disc (PostgreSQL) → LENT
+   - EXPLAIN ANALYZE sur cagg (TimescaleDB) → ULTRA RAPIDE
+   - Résultats quasi identiques (<1% d'erreur)
+
+Message clé : Pré-calcul + real-time + maintenance auto = dashboards ultra-rapides
+*/
+
+//@ < 20:00
+//@ [] 03:00
+## .[no-title-slide]
+
+
+<div class="content small-text">
+
+<h1>DÉMO : Retention Policies</h1>
+
+<pre><code>-- 1. Voir les données actuelles
+SELECT
+    COUNT(*) as total_rows,
+    MIN(collected_at) as oldest_data,
+    MAX(collected_at) as newest_data,
+    age(MAX(collected_at), MIN(collected_at)) as data_span
+FROM tooth_loss;
+
+-- 2. Ajouter une policy de rétention (1 ligne !)
+SELECT add_retention_policy('tooth_loss', INTERVAL '3 years');
+
+-- 3. Voir les policies actives
+SELECT * FROM timescaledb_information.jobs
+WHERE proc_name = 'policy_retention';</code></pre>
+
+<div class="highlight-box">Les données > 3 ans seront supprimées automatiquement</div>
+
+</div>
+
+/*
+**Timing : 3 minutes (démo live dans DataGrip)**
+Script à exécuter : scripts/demo/04-retention.sql
+
+Déroulé :
+1. État actuel des données : MIN/MAX dates, COUNT
+2. Le problème :
+   - Conformité réglementaire : RGPS (Règlement Général des Petites Souris) 😄
+   - Solution manuelle (DELETE) → Lent, bloquant
+3. Retention policy : add_retention_policy (NE PAS l'exécuter !)
+4. Comment ça marche : DROP chunk = ultra-rapide vs DELETE
+5. Avantages : maintenance zéro, pas de VACUUM nécessaire
+
+Config typique : Logs 30-90j, Métriques 6-12 mois, Business 2-5 ans
+Combine bien avec compression + caggs (garder agrégats, supprimer détail)
+*/
+
+## .[simple-slide]
+
+<div class="content" style="align-items: center; text-align: center;">
+
+<h1>Retour d'expérience Karnott</h1>
+<p style="font-size: 3vw; color: var(--color-main-white); margin-top: 1em;">37 milliards de points de données en production</p>
+<p style="font-size: 2vw; color: var(--color-main-white); margin-top: 0.5em; opacity: 0.8;">Agriculture connectée • GPS • IoT • Tracking</p>
+
+</div>
+
+
+//@ < 24:00
+## .[simple-slide]
+
+
+<div class="content">
+
+<div class="title">
+<h1>Retour d'expérience Karnott</h1>
+</div>
+
+<div class="two-cols">
+<div>
+<h2>Stack & Données</h2>
+<ul>
+<li>Agriculture connectée (tracking GPS)</li>
+<li><strong>37 milliards</strong> de points de données</li>
+<li>Milliers d'engins agricoles</li>
+<li><strong>10 hypertables</strong> (location, events, logs, sensors...)</li>
+<li>PostgreSQL 18 + <strong>TimescaleDB 2.26</strong> + PostGIS</li>
+<li>Google Cloud Platform</li>
+</ul>
+</div>
+<div>
+<h2>Cas d'usage</h2>
+<ul>
+<li>Tracking GPS temps réel</li>
+<li>Surfaces travaillées</li>
+<li>Répartition des travaux</li>
+<li>Analyse de productivité</li>
+<li>Alertes et anomalies</li>
+</ul>
+<h2>Défis initiaux</h2>
+<ul>
+<li>Stockage qui explose</li>
+<li>Coûts GCP qui grimpent</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+/*
+**Timing : 2 minutes**
+- Contexte rapide : agriculture connectée = tracteurs GPS
+- 37 milliards de points = échelle impressionnante
+- 10 hypertables = pas juste un test, c'est en prod
+- Défis initiaux : stockage $$$ + coûts cloud qui grimpent
+- Créer le suspense : "Comment on a résolu ça ? Avec TimescaleDB..."
+*/
+
+## .[simple-slide]
+
+
+<div class="content">
+
+<div class="title">
+<h1>Les gains mesurés</h1>
+</div>
+
+<table>
+<tr><th>Hypertable</th><th>Avant</th><th>Après</th><th>Gain</th></tr>
+<tr><td><strong>device_event</strong></td><td>4.6 TB</td><td>119 GB</td><td><strong>97.5%</strong></td></tr>
+<tr><td>location</td><td>5.9 TB</td><td>394 GB</td><td><strong>93.4%</strong></td></tr>
+</table>
+
+<p><strong>Moyenne (10 tables) : 94.7% de compression</strong></p>
+
+<div class="highlight-box">
+<strong>16 TB → 6 TB</strong> • 10 TB économisés • <strong>-1 800 €/mois</strong> (-21 600 €/an)<br/>
+→ ROI immédiat sur les coûts cloud !
+</div>
+
+</div>
+
+/*
+**Timing : 1 minute 30**
+- Device_event : 4.6 TB → 119 GB = 97.5% !!!
+- Location : 5.9 TB → 394 GB = 93.4%
+- Moyenne sur 10 tables : 94.7% de compression
+- Le chiffre qui tue : -1 800 €/mois = -21 600 €/an
+- Insister sur le ROI : "Ça paye la licence... sauf que c'est gratuit !"
+*/
+
+## .[simple-slide]
+
+
+<div class="content">
+
+<div class="title">
+<h1>Points clés à retenir</h1>
+</div>
+
+<div class="two-cols">
+<div>
+<h2>Les avantages</h2>
+<ul>
+<li>Extension PostgreSQL (pas de migration)</li>
+<li>Partitionnement automatique</li>
+<li>time_bucket = agrégations puissantes</li>
+<li>Compression native (~95%)</li>
+<li>Retention automatique</li>
+<li>Continuous aggregates</li>
+<li>Production-ready</li>
+</ul>
+</div>
+<div>
+<h2>Pièges à éviter</h2>
+<ul>
+<li>Bien choisir la colonne de temps (<code>TIMESTAMPTZ</code> !)</li>
+<li>Adapter la taille des chunks</li>
+<li>Tester la compression avant prod</li>
+<li>Ne pas oublier les index</li>
+<li>Planifier la stratégie de rétention</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+/*
+**Timing : 1 minute**
+Avantages (gauche) :
+- Extension PostgreSQL = pas de migration, pas de nouveau langage
+- Compression ~95% = économies immédiates (rappel Karnott : 1 800 €/mois)
+- Production-ready = on l'utilise chez Karnott depuis des années
+
+Pièges (droite) :
+- TIMESTAMPTZ fortement recommandé (DATE, TIMESTAMP, integers marchent aussi, mais TIMESTAMPTZ évite les pièges de timezone)
+- Taille des chunks : par défaut 7 jours, adapter selon volume
+- Tester compression AVANT prod (UUIDs/hashes = 30-50% vs enum/répétitif = 90-95%)
+- Message clé : "TimescaleDB c'est du PostgreSQL++, pas un remplacement"
+*/
+
+## .[simple-slide]
+
+
+<div class="content">
+
+<div class="title">
+<h1>Ressources</h1>
+</div>
+
+<div class="two-cols">
+<div>
+<h2>Documentation</h2>
+<ul>
+<li><a href="https://docs.timescale.com">docs.timescale.com</a></li>
+<li><a href="https://github.com/timescale/timescaledb">GitHub TimescaleDB</a></li>
+<li><a href="https://www.timescale.com/blog">Blog Timescale</a></li>
+</ul>
+</div>
+<div>
+<h2>Cette présentation</h2>
+<ul>
+<li>Repo : <a href="https://github.com/defts/timescaledb-petite-souris">github.com/defts/timescaledb-petite-souris</a></li>
+<li>Tous les scripts SQL</li>
+<li>Docker Compose prêt à l'emploi</li>
+<li>Documentation complète</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+/*
+**Timing : 30 secondes**
+- docs.timescale.com = excellente doc, très complète
+- Tout le code est sur GitHub
+- Cloner le repo et lancer `make start` → Docker Compose prêt
+- "N'hésitez pas à cloner le repo et tester, c'est fait pour ça !"
+*/
+
+//@ < 28:00
+## Merci ! .[thanks-slide]

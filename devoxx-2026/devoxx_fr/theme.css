@@ -1,0 +1,525 @@
+@font-face {
+  font-family: "Open Sans";
+  src: url(../fonts/Open_Sans/OpenSans-Regular.ttf);
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url(../fonts/Open_Sans/OpenSans-Bold.ttf);
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url(../fonts/Poppins/Poppins-Regular.ttf);
+}
+
+@font-face {
+  font-family: "Pirulen";
+  src: url(../fonts/Pirulen/pirulen%20rg.otf);
+}
+
+@font-face {
+  font-family: "Conthrax";
+  src: url(../fonts/Conthrax/Conthrax-SemiBold.otf);
+}
+
+:root {
+  /* Devoxx 2026 colors - "Happy AI" theme */
+  --color-bg-main: #609689;
+  --color-bg-alternate: #304936;
+  --color-bg-highlight: #EA7E14;
+  --color-bg-black: #000000;
+
+  --color-main-schema: #E7B127;
+  --color-main-white: #f5f5f5;
+  --color-alternate1: #DAE3F3;
+  --color-alternate2: #EA7E14;
+  --color-alternate3: #FFD966;
+  --color-green: #609689;
+  --color-green-alt: #9BC1B8;
+  --color-green-dark: #304936;
+  --color-pink: #FDC7CF;
+  /* /Devoxx 2026 colors */
+
+  --sd-heading1-size: 5vw;
+  --sd-heading1-line-height: 1;
+  --sd-heading2-size: 5vw;
+  --sd-heading2-line-height: 0.5;
+  --sd-text-size: 2.2vw;
+  --sd-text-line-height: 1.2;
+
+  --sd-background-color: var(--color-bg-main);
+  /* change with your devoxx theme color */
+  --sd-primary-color: var(--color-main-schema);
+  --sd-heading-color: var(--sd-primary-color);
+  --sd-text-color: #ffffff;
+  font-family: "Open Sans";
+}
+
+i,
+.i {
+  font-family: "Open Sans";
+}
+
+
+em{
+  color: var(--color-alternate2);
+}
+
+h1,
+h2 {
+  font-family: "Conthrax";
+  line-height: normal;
+}
+
+.sd-slide {
+  background-color: var(--color-bg-main);
+}
+
+/* bottom bar */
+.sd-slide::after {
+  content: "";
+  height: 20px;
+  width: 100%;
+  position: absolute;
+  background-color: var(--color-bg-highlight);
+  z-index: -1;
+  bottom: 0;
+  left: 0;
+}
+
+/* stamp Devoxx 2026 */
+.stamp {
+  position: absolute;
+  background-color: var(--color-bg-alternate);
+  color: white;
+  top: 0;
+  right: 0;
+  font-family: Pirulen;
+  font-size: 1vw;
+  padding: 10px 20px;
+}
+
+.stamp span {
+  color: var(--color-bg-highlight);
+}
+
+/* main slide */
+
+.main-slide {
+  padding-left: 40%;
+}
+
+.main-slide::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background-image: url(images/dvx_fr_2026_main.png);
+  background-size: auto 100%;
+  background-position: 25% center;
+  background-repeat: no-repeat;
+  z-index: -1;
+  clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);
+}
+
+/* / main slide */
+
+/* title slide */
+
+.title-slide .subtitle {
+  font-family: "Poppins";
+}
+
+.title-slide .subtitle::before {
+  content: "/";
+  margin-right: 1rem;
+  color: var(--sd-primary-color);
+}
+
+.title-slide {
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+}
+
+.title-slide > div {
+  height: 100%;
+}
+
+.title-slide .left-text {
+  position: relative;
+}
+
+.title-slide .left-text::before {
+  content: "";
+  background-color: var(--sd-primary-color);
+  background-image: url(images/robot_side_bar.png);
+  background-position: top left;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 200px;
+  height: 200%;
+  transform: rotate(-8deg);
+}
+
+.title-slide .left-text p {
+  font-family: Pirulen;
+  transform: rotate(-90deg);
+  position: absolute;
+  margin: 0;
+  left: -70px;
+  bottom: 130px;
+  color: var(--color-main-schema);
+}
+
+.title-slide .title {
+  flex-grow: 1;
+  font-family: "Old Maquine Caps";
+  color: var(--color-main-white);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding-left: 12vw;
+}
+
+.title-slide .title .subtitle {
+  margin: 0;
+  text-align: right;
+}
+
+.title-slide .content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: end;
+  padding-bottom: 3vw;
+  padding-right: 130px;
+}
+
+.title-slide .content p {
+  text-align: left;
+  margin: 1vw 0;
+}
+
+/* / title slide */
+
+/* no title slide */
+
+.no-title-slide {
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+}
+
+.no-title-slide > div {
+  height: 100%;
+}
+
+.no-title-slide .left-text {
+  position: relative;
+}
+
+.no-title-slide .left-text::before {
+  content: "";
+  background-color: var(--sd-primary-color);
+  background-image: url(images/robot_side_bar.png);
+  background-position: bottom right;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 200px;
+  height: 200%;
+  transform: rotate(-8deg);
+}
+
+.no-title-slide .left-text p {
+  font-family: Pirulen;
+  transform: rotate(-90deg);
+  position: absolute;
+  margin: 0;
+  left: -30px;
+  bottom: 130px;
+  color: var(--color-main-schema);
+}
+
+.no-title-slide .content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: start;
+  padding: 3vw 5vw;
+}
+
+.no-title-slide .content p {
+  margin: 0;
+  text-align: left;
+}
+
+/* / no title slide */
+
+/* simple slide */
+
+.simple-slide {
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+}
+
+.simple-slide > div {
+  height: 100%;
+}
+
+.simple-slide .left-text {
+  position: relative;
+}
+
+.simple-slide .left-text::before {
+  content: "";
+  background-color: var(--sd-primary-color);
+  background-image: url(images/robot_side_bar.png);
+  background-position: top right;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 200%;
+  // transform: rotate(-8deg);
+}
+
+.simple-slide .content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-bottom: 3vw;
+  padding-right: 5vw;
+  padding-left: 5vw;
+}
+
+.simple-slide .content li::marker {
+  list-style-type: disc;
+  color: var(--color-main-schema);
+}
+
+.simple-slide .content .title {
+  font-family: "Old Maquine Caps";
+  color: var(--color-main-schema);
+  font-size: larger;
+}
+
+sub::before {
+  content: "/";
+  margin-right: 1em;
+  color: var(--color-alternate2);
+}
+
+.simple-slide .content .title sub {
+  font-size: large;
+  color: var(--color-main-white);
+}
+
+.simple-slide .content p {
+  text-align: left;
+  margin: 1vw 0;
+}
+
+/* / title slide */
+
+/* thanks slide */
+
+.thanks-slide {
+  background-image: url(images/dvx_fr_2026_thanks.png);
+  background-position: top left;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 8vw 12vh 0;
+}
+
+.thanks-slide::before {
+  position: absolute;
+  content: "";
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(#00000000, #000000);
+  z-index: -1;
+}
+
+.thanks-slide::after {
+  height: 0;
+}
+
+.thanks-slide .stamp {
+  position: relative;
+  background: none;
+  margin-top: 4vw;
+  font-size: 1.5vw;
+}
+
+/* / thanks slides */
+
+/* ===== Custom styles for TimescaleDB presentation ===== */
+
+/* Code blocks */
+pre {
+  background-color: #1a1a2e;
+  border-radius: 8px;
+  padding: 1.2em;
+  overflow-x: auto;
+  font-size: 1.3vw;
+  line-height: 1.5;
+  border-left: 4px solid var(--color-main-schema);
+  margin: 0.8em 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+code {
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  color: #e0e0e0;
+}
+
+pre code {
+  font-size: inherit;
+}
+
+/* Inline code */
+p code, li code {
+  background-color: rgba(231, 177, 39, 0.15);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8em 0;
+  font-size: 1.8vw;
+}
+
+th, td {
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.4em 0.8em;
+  text-align: left;
+}
+
+th {
+  background-color: rgba(231, 177, 39, 0.2);
+  color: var(--color-main-schema);
+  font-family: "Conthrax";
+}
+
+/* Two-column layout */
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+  width: 100%;
+}
+
+/* Four-column layout */
+.four-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 1.5em;
+  width: 100%;
+  text-align: center;
+}
+
+.four-cols h2 {
+  font-size: 3.5vw;
+  margin-bottom: 0.5em;
+}
+
+.four-cols p {
+  font-size: 1.8vw;
+  margin: 0.3em 0;
+}
+
+/* Titles within no-title slides */
+.no-title-slide .content h1 {
+  color: var(--color-main-schema);
+  font-size: 3vw;
+  margin-bottom: 0.5em;
+}
+
+.no-title-slide .content h2 {
+  color: var(--color-main-white);
+  font-size: 2.2vw;
+  margin-top: 0.5em;
+  margin-bottom: 0.3em;
+}
+
+/* Smaller text for dense slides */
+.small-text {
+  font-size: 1.6vw;
+}
+
+.small-text pre {
+  font-size: 1.1vw;
+}
+
+.small-text li {
+  margin: 0.2em 0;
+}
+
+/* Highlight box */
+.highlight-box {
+  background-color: rgba(231, 177, 39, 0.1);
+  border: 2px solid var(--color-main-schema);
+  border-radius: 8px;
+  padding: 0.8em 1.2em;
+  margin: 0.8em 0;
+  text-align: center;
+  font-size: 2vw;
+}
+
+/* Center text utility */
+.text-center {
+  text-align: center;
+}
+
+/* Emoji sizing */
+.emoji-big {
+  font-size: 4vw;
+}
+
+/* simple-slide list markers */
+.simple-slide .content ul {
+  padding-left: 1.5em;
+}
+
+.no-title-slide .content ul {
+  padding-left: 1.5em;
+}
+
+.no-title-slide .content li::marker {
+  color: var(--color-main-schema);
+}
+
+/* Image styling */
+.content img {
+  max-width: 100%;
+  max-height: 60vh;
+  margin: 0 auto;
+  display: block;
+}

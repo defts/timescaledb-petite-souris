@@ -55,7 +55,7 @@ WHERE collected_at >= '2025-10-15' AND collected_at < '2025-10-16'
 GROUP BY country_code
 ORDER BY country_code;
 
--- avec stats_agg
+-- avec stats_agg (2 syntaxes possibles : pipeline -> ou appel de fonction)
 WITH stats as (
     SELECT
         country_code,
