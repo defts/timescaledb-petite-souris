@@ -56,3 +56,6 @@ Thumbs.db
 devoxx-2026/fonts/Calibri/
 devoxx-2026/fonts/Conthrax/
 devoxx-2026/fonts/Pirulen/
+
+# Claude Code: local settings, not shared
+.claude/settings.local.json
